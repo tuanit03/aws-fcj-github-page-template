@@ -6,8 +6,6 @@ chapter : false
 pre : " <b> 1. </b> "
 ---
 
-# Tổng quan về dự án To-Do App
-
 ## Giới thiệu
 
 To-Do App là một ứng dụng quản lý công việc cá nhân được xây dựng trên nền tảng AWS. Ứng dụng cung cấp các chức năng cơ bản như đăng ký, đăng nhập, thêm, xóa, và quản lý các task. Bên cạnh đó, người dùng sẽ nhận được thông báo qua email nhắc nhở về các công việc sắp đến hạn. Ứng dụng sử dụng các dịch vụ của AWS để triển khai toàn bộ quy trình, từ xác thực người dùng, lưu trữ dữ liệu cho đến việc gửi thông báo email.
