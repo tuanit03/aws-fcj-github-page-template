@@ -5,18 +5,45 @@ weight : 1
 chapter : false
 pre : " <b> 1. </b> "
 ---
-**Session Manager** là một chức năng nằm trong dịch vụ System Manager của AWS, Session Manager cung cấp khả năng quản lý các máy chủ một cách an toàn mà **không cần mở port SSH, không cần Bastion Host hoặc quản lý SSH key**. 
-Session Manager cũng giúp dễ dàng tuân thủ các chính sách của công ty yêu cầu quyền truy cập có kiểm soát, đảm bảo việc bảo mật nghiêm ngặt và ghi log truy việc truy cập trong khi vẫn cung cấp cho người dùng cuối quyền truy cập đa nền tảng.
 
-Với việc sử dụng Session Manager, bạn sẽ có được những ưu điểm sau:
+# Tổng quan về dự án To-Do App
 
-- Không cần phải mở cổng 22 cho giao thức SSH.
-- Có thể cấu hình để kết nối không cần đi ra ngoài internet.
-- Không cần quản lý private key của server để kết nối SSH.
-- Quản lý tập trung được user bằng việc sử dụng AWS IAM.
-- Truy cập tới server một cách dễ dàng và đơn giản bằng một cú click chuột.
-- Thời gian truy cập nhanh chóng hơn các phương thức truyền thống như SSH.
-- Hỗ trợ nhiều hệ điều hành khác nhau như Linux, Windows, MacOS.
-- Log lại được các phiên kết nối và các câu lệnh đã thực thi trong lúc kết nối tới server.
+## Giới thiệu
 
-Với những ưu điểm trên, bạn có thể sử dụng Session Manager thay vì sử dụng kỹ thuật Bastion host giúp chúng ta tiết kiệm được thời gian và chi phí khi quản lý server Bastion.
+To-Do App là một ứng dụng quản lý công việc cá nhân được xây dựng trên nền tảng AWS. Ứng dụng cung cấp các chức năng cơ bản như đăng ký, đăng nhập, thêm, xóa, và quản lý các task. Bên cạnh đó, người dùng sẽ nhận được thông báo qua email nhắc nhở về các công việc sắp đến hạn. Ứng dụng sử dụng các dịch vụ của AWS để triển khai toàn bộ quy trình, từ xác thực người dùng, lưu trữ dữ liệu cho đến việc gửi thông báo email.
+
+## Chức năng chính
+
+- **Đăng ký và đăng nhập người dùng**: Quản lý xác thực và phân quyền người dùng thông qua **AWS Cognito**.
+- **Thêm và xóa task**: Lưu trữ và quản lý các task của người dùng bằng **AWS DynamoDB**.
+- **Thông báo nhắc nhở**: Gửi email nhắc nhở người dùng về các công việc sắp đến hạn thông qua **AWS Simple Email Service (SES)**.
+- **Lập lịch tự động**: Kiểm tra các task sắp đến hạn và tự động gửi thông báo mỗi giờ nhờ **Amazon EventBridge** và **AWS Lambda**.
+
+## Kiến trúc hệ thống
+
+To-Do App được thiết kế với kiến trúc serverless trên nền tảng AWS, với các thành phần chính như sau:
+
+- **Frontend (Giao diện người dùng)**: 
+  - Sử dụng **AWS Amplify** để triển khai frontend, cung cấp giao diện người dùng cho ứng dụng. Người dùng có thể đăng ký, đăng nhập và quản lý task qua giao diện này.
+  
+- **Backend (Xử lý dữ liệu và API)**:
+  - **AWS Cognito**: Quản lý đăng ký và đăng nhập người dùng.
+  - **AWS API Gateway**: Làm trung gian giữa client và các Lambda Function. Mỗi endpoint trong API Gateway tương ứng với một chức năng như đăng ký, đăng nhập, thêm hoặc xóa task.
+  - **AWS Lambda**: Xử lý logic nghiệp vụ cho các hành động của người dùng.
+    - `register_user`: Tạo user mới trong DynamoDB khi người dùng đăng ký.
+    - `login_user`: Lấy danh sách task của người dùng khi đăng nhập.
+    - `add_delete_tasks`: Thêm và xóa task khỏi DynamoDB theo yêu cầu từ client.
+    - `send_task_reminder`: Tự động kiểm tra các task sắp đến hạn và gửi email nhắc nhở qua SES.
+  - **AWS DynamoDB**: Lưu trữ thông tin người dùng và các task của họ.
+
+- **Thông báo và lập lịch**:
+  - **Amazon EventBridge**: Lập lịch chạy `send_task_reminder` mỗi giờ một lần để kiểm tra các task sắp đến hạn.
+  - **AWS SES**: Gửi email thông báo nhắc nhở đến người dùng về các task sắp đến hạn.
+    
+![aws_diagram](https://github.com/user-attachments/assets/5e05700d-4a53-45e3-8033-9b8d246170c4)
+
+4. **Gửi thông báo nhắc nhở**:
+   - **EventBridge** tự động kích hoạt `send_task_reminder_lambda` mỗi giờ.
+   - Hàm Lambda kiểm tra các task sắp đến hạn trong **DynamoDB** và gửi email nhắc nhở đến người dùng thông qua **AWS SES**.
+
+---
